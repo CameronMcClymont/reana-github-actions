@@ -4,25 +4,19 @@ inputs:
   reana_specs:
     description: "REANA specification path to validate"
     required: true
+  validator_image:
+    description:
+      "REANA-Workflow-Validator image used to load the specifications"
+    required: false
+    default: "docker.io/reanahub/reana-workflow-validator:0.95.0-alpha.1"
 runs:
   using: "composite"
   steps:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.12
-
-    - name: Install Python dependencies
-      run: |
-        pip install --upgrade pip
-        pip install --pre reana-client
-      shell: bash
-
     - name: Validate workflow
-      run:
-        for file in ${{ inputs.reana_specs }}; do reana-client validate
-        --environments -f $file; done
+      run: '"${{ github.action_path }}/validate.sh" ${{ inputs.reana_specs }}'
+      env:
+        VALIDATOR_IMAGE: ${{ inputs.validator_image }}
       shell: bash
